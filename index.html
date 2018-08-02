@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.2/css/bootstrap.min.css" integrity="sha384-Smlep5jCw/wG7hdkwQ/Z5nLIefveQRIY9nfy6xoR1uRYBtpZgI6339F5dgvm/e9B" crossorigin="anonymous">
+	
+	<style>
+	.table td {
+	   text-align: center;   
+	}
+	
+	body {
+		background-color: #d8d7cb;
+	}
+	</style>
+	
+	<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+
+    <title>Trainer</title>
+  </head>
+  <body>
+	<div class="container">
+	  <div class="jumbotron">
+		  <h1>Sudoku Trainer</h1>
+		  <p>In order to play faster Sudoku you can train the recognition of the missing numbers in a line or in a quadrant.</p>
+		  <div>
+			<table id="lineTable" class="table table-bordered table-dark table-sm"></table>
+			<button id="buttonStartLineTrainer" class="btn btn-success">Start</button>
+			<hr>
+			<table>
+				<tr>
+					<td>
+						<table>
+							<tr>
+								<td><button id="7" class="btn btn-primary btn-lg numberButton">7</button></td>
+								<td><button id="8" class="btn btn-primary btn-lg numberButton">8</button></td>
+								<td><button id="9" class="btn btn-primary btn-lg numberButton">9</button></td>
+							</tr>
+							<tr>
+								<td><button id="4" class="btn btn-primary btn-lg numberButton">4</button></td>
+								<td><button id="5" class="btn btn-primary btn-lg numberButton">5</button></td>
+								<td><button id="6" class="btn btn-primary btn-lg numberButton">6</button></td>
+							</tr>
+							<tr>
+								<td><button id="1" class="btn btn-primary btn-lg numberButton">1</button></td>
+								<td><button id="2" class="btn btn-primary btn-lg numberButton">2</button></td>
+								<td><button id="3" class="btn btn-primary btn-lg numberButton">3</button></td>
+							</tr>
+						</table>
+					</td>
+					<td>
+						<div id="chart_div" style="width: 400px; height: 120px;"></div>
+					</td>
+				</tr>
+			</table>
+			</div>
+		  </div>
+	  </div>
+	</div>
+    
+
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.2/js/bootstrap.min.js" integrity="sha384-o+RDsa0aLu++PJvFqy8fFScvbHFLtbvScb8AjopnFD+iEQ7wo/CG0xlczd+2O/em" crossorigin="anonymous"></script>
+	
+	<script>
+		/*
+		Copyright by Pietro Lusso 2018
+		*/
+		var game = {};
+		
+		game.started = false;
+		game.missingNumber = null;
+		game.score = 0;
+		
+		game.init = function() {
+			if (!game.started) {
+				game.started = true;
+				$('#buttonStartLineTrainer').html('now type the missing number ...');
+				$('#buttonStartLineTrainer').attr('class','btn btn-primary');
+			}
+			game.newRound();
+		}
+		
+		game.newRound = function() {
+			var line = '<tr>';
+			var lineNumbers = [];
+			
+			for (var x=0; x<9; x++) {
+				lineNumbers.push(x + 1);
+			}
+			
+			game.missingNumber = lineNumbers.splice(game.getRandomInt(lineNumbers.length),1);
+			console.log('Missing number = ' + game.missingNumber);
+			game.emptyCellExist = false;
+			
+			for (var x=0; x<9; x++) {
+				var size = lineNumbers.length;
+				
+				if (!game.emptyCellExist) {
+					
+					if (x == 8 || game.getRandomInt(9) == x) {
+						line += '<td>_</td>';
+						game.emptyCellExist = true;
+					} else {
+						line += '<td>' + lineNumbers.splice(game.getRandomInt(size),1) + '</td>';
+					}
+					
+				} else {
+					line += '<td>' + lineNumbers.splice(game.getRandomInt(size),1) + '</td>';
+				}
+			}
+			
+			line += '</tr>';
+			
+			$('#lineTable').html(line);
+		}
+		
+		game.getRandomInt = function(max) {
+			var randomNumber = Math.floor(mySeededRandom() * Math.floor(max));
+			return randomNumber;
+		}
+		
+		$('#buttonStartLineTrainer').click(function(){
+			game.init();
+		});
+		
+		$('.numberButton').click(function(){
+			console.log();
+			game.checkValue(parseInt(this.id));
+		});
+		
+		game.checkValue = function(n) {
+		  if (n == game.missingNumber) {
+			console.log('YES!');
+			game.newRound();
+			game.score += 1;
+		  } else {
+			game.score -= 1;
+		  }
+		  
+		  $('#score').html(game.score.toString());
+		  game.chart.data.setValue(0, 1, game.score);
+          game.chart.chart.draw(game.chart.data, game.chart.options);
+		}
+		
+		document.addEventListener('keypress', (event) => {
+		  var keyName = event.key;
+		  console.log(keyName);
+		    
+		  game.checkValue(keyName);
+		});
+		
+		var dateNow = new Date();
+		var seed = dateNow.getTime();
+		function mySeededRandom() {
+			var x = Math.sin(seed++) * 10000;
+			return x - Math.floor(x);
+		}
+		
+	  google.charts.load('current', {'packages':['gauge']});
+      google.charts.setOnLoadCallback(drawChart);
+	  game.chart = {};
+	  game.chart.data = null;
+	  game.chart.options = null;
+	  game.chart.chart = null;
+
+      function drawChart() {
+
+        game.chart.data = google.visualization.arrayToDataTable([
+          ['Label', 'Value'],
+          ['Success', 0]
+        ]);
+
+        game.chart.options = {
+          width: 400, height: 120,
+          redFrom: 90, redTo: 100,
+          yellowFrom:75, yellowTo: 90,
+          minorTicks: 5
+        };
+
+        game.chart.chart = new google.visualization.Gauge(document.getElementById('chart_div'));
+        game.chart.chart.draw(game.chart.data, game.chart.options);
+       
+      }
+	</script>
+  </body>
+</html>
