@@ -19,7 +19,7 @@
 	</style>
 	
 	<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
-
+	
     <title>Trainer</title>
   </head>
   <body>
@@ -59,15 +59,20 @@
 			</table>
 			</div>
 		  </div>
+		  <div>
+			Checkout the project and sourcecode on <a href="https://github.com/hydrogen2oxygen/sudoku-trainer" target="t">GitHub</a>!
+		  </div>
 	  </div>
-	</div>
-    
+	  
+   
 
     <!-- Optional JavaScript -->
     <!-- jQuery first, then Popper.js, then Bootstrap JS -->
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.2/js/bootstrap.min.js" integrity="sha384-o+RDsa0aLu++PJvFqy8fFScvbHFLtbvScb8AjopnFD+iEQ7wo/CG0xlczd+2O/em" crossorigin="anonymous"></script>
+	<script type="text/javascript" src="js/jquery.vibrate.min.js"></script>
+	<script type="text/javascript" src="js/js.cookie.js"></script>
 	
 	<script>
 		/*
@@ -80,12 +85,17 @@
 		game.score = 0;
 		
 		game.init = function() {
+		
+			game.highscore = Cookies.get('highscore');
+			
 			if (!game.started) {
 				game.started = true;
+				game.startTime = new Date();
 				$('#buttonStartLineTrainer').html('now type the missing number ...');
 				$('#buttonStartLineTrainer').attr('class','btn btn-primary');
 			}
 			game.newRound();
+			navigator.vibrate([125,75,125,275,200,275,125,75,125,275,200,600,200,600]);
 		}
 		
 		game.newRound = function() {
@@ -97,7 +107,7 @@
 			}
 			
 			game.missingNumber = lineNumbers.splice(game.getRandomInt(lineNumbers.length),1);
-			console.log('Missing number = ' + game.missingNumber);
+			//console.log('Missing number = ' + game.missingNumber);
 			game.emptyCellExist = false;
 			
 			for (var x=0; x<9; x++) {
@@ -136,6 +146,8 @@
 			game.checkValue(parseInt(this.id));
 		});
 		
+		$("button").vibrate(); 
+		
 		game.checkValue = function(n) {
 		  if (n == game.missingNumber) {
 			console.log('YES!');
@@ -148,6 +160,27 @@
 		  $('#score').html(game.score.toString());
 		  game.chart.data.setValue(0, 1, game.score);
           game.chart.chart.draw(game.chart.data, game.chart.options);
+		  
+		  if (game.score == 100) {
+			
+			game.endTime = new Date();
+			var timeDiff = game.endTime - game.startTime;
+			timeDiff /= 1000;
+			var seconds = Math.round(timeDiff);
+			console.log(seconds + " seconds");
+			
+			game.started = false;
+			game.missingNumber = null;
+			game.score = 0;
+			
+			$('#score').html(game.score.toString());
+			game.chart.data.setValue(0, 1, game.score);
+			game.chart.chart.draw(game.chart.data, game.chart.options);
+			
+			$('#lineTable').html('');
+			$('#buttonStartLineTrainer').html('Start');
+			$('#buttonStartLineTrainer').attr('class','btn btn-success');
+		  }
 		}
 		
 		document.addEventListener('keypress', (event) => {
